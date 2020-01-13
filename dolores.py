@@ -4,7 +4,7 @@ import csv
 import random
 import asyncio
 
-token = 'NTkyMzExNDA5MDk4ODgzMDcz.XhxwBQ.gfNlWMw8WQ9cq61fMZZayccttuo'
+token = open('api.key','r').read()
 emotes = {}
 
 
