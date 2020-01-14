@@ -65,7 +65,8 @@ class MyClient(discord.Client):
         author = message.author
         content = message.content
 
-
+        print(guild.features)
+        print(guild.premium_tier)
         if content.startswith('/doloreshelp'):
             await channel.send("""**/addglobalall**   -> Bu serverdaki tüm emoteları global kullanıma ekler.
 **/addglobal [emotename]**   -> Belirtilen emote'u global kullanıma ekler.
@@ -94,7 +95,7 @@ class MyClient(discord.Client):
                 await channel.send("**Usage:**``/add [emotename]`` with image attached.")
                 return
 
-            if len(guild.emojis) == guild.emoji_limit:
+            if len(guild.emojis) == guild.emoji_limit and guild.premium_tier == 0:
                 await channel.send("This server has reached the maximum emoji size!")
                 return
 
