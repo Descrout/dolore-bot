@@ -71,10 +71,12 @@ class MyClient(discord.Client):
         await self.pollMsg.edit(content="**{0}** anketinin sonucu:\n\n👍 **[{1}]**     {4}%     **[{2}]** 👎\n\noylarıyla **__{3}__**".format(msgStr,yes,no,result,(winner/(yes+no))*100))
         await self.pollMsg.clear_reactions()
         self.pollMsg = None
-        self.pollTimer = 0  
+        self.pollTimer = 0
+        self.up_slot = [False,False,False]
+        self.down_slot = [False,False,False]
 
     async def on_message(self, message):
-        #print('Message from {0.author.name}: {0.content} {0.author.mention}'.format(message))
+        print('Message from {0.author.name}: {0.content}'.format(message))
         if message.author == self.user:
             return
         
@@ -187,7 +189,7 @@ class MyClient(discord.Client):
             await channel.send('**{}** used slot machine <:PauseChamp:603665056881836062>🕹️'.format(author.display_name))
             self.slotTimer = 3
             self.slot_user = author.display_name
-            self.slotMsg = await channel.send('<a:PoGif:674210989784301568> <a:PoGif:674210989784301568> <a:PoGif:674210989784301568> ')
+            self.slotMsg = await channel.send('<a:PoGif:674210989784301568> <a:PoGif:674210989784301568> <a:PoGif:674210989784301568> \n<a:PoGif:674210989784301568> <a:PoGif:674210989784301568> <a:PoGif:674210989784301568> \n<a:PoGif:674210989784301568> <a:PoGif:674210989784301568> <a:PoGif:674210989784301568> ')
             self.resultMsg = await channel.send('Waiting for results <:forsenSmug:671690140023914496><a:TeaTime:610046592015269889>')
             self.loop.create_task(slot_step())
         elif content.startswith('/roll'):
@@ -238,14 +240,33 @@ async def slot_step():
         await asyncio.sleep(1.5)
         slot_index = 3 - client.slotTimer
         client.slotTimer -= 1
-        if slot_index > 0 and random.randint(1,100) < 17:
+        if slot_index > 0 and random.randint(1,100) < 16:
             client.slot[slot_index] = client.slot[0]
         else:
             client.slot[slot_index] = random.randint(1,10)
 
         temp_slot_msg = ""
+        if slot_index == 0:
+            temp_slot_msg += "<:downPog:666640028742451201> <a:PoGif:674210989784301568> <a:PoGif:674210989784301568> "
+        elif slot_index == 1:
+            temp_slot_msg += "<:downPog:666640028742451201> <:downPog:666640028742451201> <a:PoGif:674210989784301568> "
+        elif slot_index == 2:
+            temp_slot_msg += "<:downPog:666640028742451201> <:downPog:666640028742451201> <:downPog:666640028742451201> "
+
+        temp_slot_msg += "\n"
+
         for num in client.slot:
             temp_slot_msg += '{} '.format(client.slot_emotes[num])
+        
+        temp_slot_msg += "\n"
+
+        if slot_index == 0:
+            temp_slot_msg += "<:upPog:666640053346369559> <a:PoGif:674210989784301568> <a:PoGif:674210989784301568> "
+        elif slot_index == 1:
+            temp_slot_msg += "<:upPog:666640053346369559> <:upPog:666640053346369559> <a:PoGif:674210989784301568> "
+        elif slot_index == 2:
+            temp_slot_msg += "<:upPog:666640053346369559> <:upPog:666640053346369559> <:upPog:666640053346369559> "
+
         await client.slotMsg.edit(content=temp_slot_msg)
     await client.end_slot()
 
