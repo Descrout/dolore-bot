@@ -28,15 +28,32 @@ class MyClient(discord.Client):
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
         readEmotes()
-        self.sansur = False
         self.pollMsg = None
         self.pollTimer = 0
-        
+        self.slotTimer = 0
+        self.resultMsg = None
+        self.slotMsg = None
+        self.slot = [0,0,0]
+        self.slot_user = "" 
+        self.slot_emotes = ('<a:PoGif:674210989784301568>','<:UnPog:668594400732905477>','<:SadChamp:666636210864652290>','<:WeirdChamp:558996347441905665>','<:SHOGOYUM:645003841946779669>','<:SHOGOMUL:671125103316303872>','<:OkayChamp:558996356921032763>','<:InsaneChamp:666639447369973801>','<:POGOMO:604782838600171533>','<:PogU:558997246046240773>','<:Shogomo:666643168946552832>')
+
+    async def end_slot(self):
+        for num in self.slot:
+            if self.slot[0] != num:
+                await self.resultMsg.edit(content="**{}** fucking lost <:forsenHead:666640278354001920><a:HYPERCLAP:592860090722287640>".format(self.slot_user))
+                break
+        else:
+            await self.resultMsg.edit(content="@everyone **HOLY FUCK** <:Pogomega:559015368891432972><:Pogomega:559015368891432972><:Pogomega:559015368891432972> **{} FUCKIN WONNNNN** <:Pogomega:559015368891432972><:Pogomega:559015368891432972>".format(self.slot_user))
+
+        self.slotTimer = 0
+        self.resultMsg = None
+        self.slotMsg = None
+        self.slot = [0,0,0]
+        self.slot_user = ""
     async def clear_poll(self):
         msgStr = self.pollMsg.content[self.pollMsg.content.find('-')+1:]
         yes = no = 0
         cache_msg = discord.utils.get(self.cached_messages,id=self.pollMsg.id)
-        #print(cache_msg)
         for r in cache_msg.reactions:
             if r.emoji == "👍":
                 yes = r.count
@@ -57,16 +74,15 @@ class MyClient(discord.Client):
         self.pollTimer = 0  
 
     async def on_message(self, message):
+        #print('Message from {0.author.name}: {0.content} {0.author.mention}'.format(message))
         if message.author == self.user:
             return
-        print('Message from {0.author.name}: {0.content}'.format(message))
+        
         guild = message.guild
         channel = message.channel
         author = message.author
         content = message.content
 
-        print(guild.features)
-        print(guild.premium_tier)
         if content.startswith('/doloreshelp'):
             await channel.send("""**/addglobalall**   -> Bu serverdaki tüm emoteları global kullanıma ekler.
 **/addglobal [emotename]**   -> Belirtilen emote'u global kullanıma ekler.
@@ -76,6 +92,7 @@ class MyClient(discord.Client):
 **/killme [count]**   -> Kendi mesajlarınızı siler. (count belirtmezseniz 10 tane) (max 10)
 **/roll [number(optional)]**   -> Sayı girildiği durumda 0 ile sayı arasında random sayı seçer. (default 100)
 **/poll [time(optional)] [pollsentence]**   -> Poll oluşturur ve 10 saniye sonra sonucu gösterir
+**/slot**     -> Slot makinesi çalıştırır
             """)
         elif content.startswith('/killme'):
             msgList = await channel.history().flatten()
@@ -163,7 +180,16 @@ class MyClient(discord.Client):
                     break
             else:
                 await channel.send("There is no emote called {0} !".format(parsed[1]))
-        
+        elif content.startswith('/slot'):
+            if self.slotTimer != 0:
+                await channel.send('Wait for current slot to end.')
+                return
+            await channel.send('**{}** used slot machine <:PauseChamp:603665056881836062>🕹️'.format(author.display_name))
+            self.slotTimer = 3
+            self.slot_user = author.display_name
+            self.slotMsg = await channel.send('<a:PoGif:674210989784301568> <a:PoGif:674210989784301568> <a:PoGif:674210989784301568> ')
+            self.resultMsg = await channel.send('Waiting for results <:forsenSmug:671690140023914496><a:TeaTime:610046592015269889>')
+            self.loop.create_task(slot_step())
         elif content.startswith('/roll'):
             try:
                 parsed = content.split(' ')
@@ -172,24 +198,6 @@ class MyClient(discord.Client):
                 await channel.send('**{0} rolled between [0 - {1}] and got __{2}__ !**'.format(author.display_name,count,rand))
             except:
                 await channel.send('**Usage:** ``/roll [number(optional)]``')
-        elif self.sansur and "anan" in content.lower() or "anası" in content.lower() or "anne" in content.lower():
-            tempContent = content.lower()
-            tempContent = tempContent.replace("anasını","anamı")
-            tempContent = tempContent.replace("anası","anam")
-            tempContent = tempContent.replace("anan","anam")
-            tempContent = tempContent.replace("annen","annem")
-            tempContent = tempContent.replace("annesini","annemi")
-            tempContent = tempContent.replace("anneciğini","annemi")
-            tempContent = tempContent.replace("anneciği","annem")
-            tempContent = tempContent.replace("annesi","annem")
-            tempContent = tempContent.replace("anneleriniz","annem")
-            tempContent = tempContent.replace("anneciğin","anneciğim")
-            
-            await message.delete()
-            await channel.send("**{0}**:".format(author.display_name))
-            await channel.send(tempContent)
-        elif content.startswith("/sansur"):
-            self.sansur = not self.sansur
         elif content.startswith("/poll "):
             parsed = content.split(' ')
             if len(parsed) < 2:
@@ -210,7 +218,7 @@ class MyClient(discord.Client):
             await self.pollMsg.add_reaction("👍")
             await self.pollMsg.add_reaction("👎")
             await message.delete()
-            self.loop.create_task(step())
+            self.loop.create_task(poll_step())
         else:
             tempContent = content
             flag = False
@@ -225,11 +233,23 @@ class MyClient(discord.Client):
                 await channel.send(tempContent)
 
 
-async def test():
-    print("test")
+async def slot_step():
+    while client.slotTimer > 0:
+        await asyncio.sleep(1.5)
+        slot_index = 3 - client.slotTimer
+        client.slotTimer -= 1
+        if slot_index > 0 and random.randint(1,100) < 17:
+            client.slot[slot_index] = client.slot[0]
+        else:
+            client.slot[slot_index] = random.randint(1,10)
 
+        temp_slot_msg = ""
+        for num in client.slot:
+            temp_slot_msg += '{} '.format(client.slot_emotes[num])
+        await client.slotMsg.edit(content=temp_slot_msg)
+    await client.end_slot()
 
-async def step():
+async def poll_step():
     while client.pollTimer > 0:
         await asyncio.sleep(1.0)
         client.pollTimer -= 1
