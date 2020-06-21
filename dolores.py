@@ -76,7 +76,6 @@ class MyClient(discord.Client):
         if message.author == self.user:
             return
         #print('Message from {0.author.name}: {0.content} {0.author.id}'.format(message))
-
         guild = message.guild
         channel = message.channel
         author = message.author
@@ -93,7 +92,11 @@ class MyClient(discord.Client):
 **/roll [optional_number]**   -> Roll a random number. (default 100)
 **/poll [optional_time_as_sec] [pollsentence]**   -> Create a poll. (default 10 sec)
 **/slot**     -> Use the slot machine.
+**/emotes**  -> See the emotes.
             """)
+        elif content.startswith('/emotes'):
+            await message.delete()
+            await channel.send("Check the emotes here {0}👉 https://naughty-ride-6f6059.netlify.app".format(emotes['PauseChamp']))
         elif content.startswith('/killme'):
             msgList = await channel.history().flatten()
             parsed = content.split(' ')
