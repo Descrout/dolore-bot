@@ -76,7 +76,7 @@ class MyClient(discord.Client):
         if message.author == self.user:
             return
         #print('Message from {0.author.name}: {0.content} {0.author.id}'.format(message))
-        
+
         guild = message.guild
         channel = message.channel
         author = message.author
@@ -177,7 +177,7 @@ class MyClient(discord.Client):
             else:
                 await channel.send("There is no emote called {0} !".format(parsed[1]))
         elif content.startswith('/slot'):
-            if self.slotTimer != 0:
+            if self.slotMsg != None:
                 await channel.send('Wait for current slot to end.')
                 return
             await channel.send('**{}** used slot machine {}🕹️'.format(author.display_name, emotes['PauseChamp']))
@@ -216,18 +216,17 @@ class MyClient(discord.Client):
             await message.delete()
             self.loop.create_task(poll_step())
         else:
-            tempContent = content
+            parsed = content.split()
             flag = False
-            for name, e in emotes.items():
-                ind = tempContent.find(name)
-                if ind != -1 and tempContent[ind-1] != ':' and name not in [n.name for n in guild.emojis if not n.animated]:
-                    flag = True
-                    tempContent = tempContent.replace(name,e)
+            for i, word in enumerate(parsed):
+                for name, e in emotes.items():
+                    if word == name:
+                        flag = True
+                        parsed[i] = e       
             if flag:
                 await message.delete()
                 await channel.send("**{0}**:".format(author.display_name))
-                await channel.send(tempContent)
-
+                await channel.send(' '.join(parsed))
 
 async def slot_step():
     try:
