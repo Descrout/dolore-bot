@@ -96,7 +96,7 @@ class MyClient(discord.Client):
             """)
         elif content.startswith('/emotes'):
             await message.delete()
-            await channel.send("Check the emotes here {0}👉 https://naughty-ride-6f6059.netlify.app".format(emotes['PauseChamp']))
+            await channel.send("Check the emotes here {0}👉  http://206.189.111.249:8000/".format(emotes['PauseChamp']))
         elif content.startswith('/killme'):
             msgList = await channel.history().flatten()
             parsed = content.split(' ')
@@ -155,7 +155,7 @@ class MyClient(discord.Client):
                 await channel.send("**Usage:**``/removeglobal [emotename]``")
                 return
             for k,v in emotes.items():
-                if v == parsed[1]:
+                if k == parsed[1]:
                     emotes.pop(k)
                     writeEmotes()
                     break
