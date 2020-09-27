@@ -9,7 +9,7 @@ emotes = {}
 
 
 def writeEmotes():
-    with open('emotes.csv', mode='w',newline='') as emoteFile:
+    with open('emotes/emotes.csv', mode='w',newline='') as emoteFile:
         writer = csv.writer(emoteFile)
         writer.writerow(["name","emote"])
         for e in emotes.items():
@@ -17,7 +17,7 @@ def writeEmotes():
 
 
 def readEmotes():
-    with open('emotes.csv') as emoteFile:
+    with open('emotes/emotes.csv') as emoteFile:
         reader = csv.reader(emoteFile)
         next(reader)
         for row in reader:
@@ -35,15 +35,15 @@ class MyClient(discord.Client):
         self.slotMsg = None
         self.slot = [0,0,0]
         self.slot_user = "" 
-        self.slot_emotes = (emotes['PoGif'], emotes['UnPog'], emotes['SadChamp'], emotes['WeirdChamp'], emotes['SHOGOYUM'], emotes['SHOGOMUL'], emotes['WeirdChamp'], emotes['InsaneChamp'], emotes['POGOMO'], emotes['PogU'], emotes['SirO'])
+        self.slot_emotes = (emotes['PoGif'], emotes['UnPog'], emotes['SadChamp'], emotes['SHOGOYUM'], emotes['SHOGOMUL'], emotes['WeirdChamp'], emotes['InsaneChamp'], emotes['POGOMO'], emotes['PogU'], emotes['PainsChamp'])
 
     async def end_slot(self):
         for num in self.slot:
             if self.slot[0] != num:
-                await self.resultMsg.edit(content="**{}** fucking lost {}{}".format(self.slot_user, emotes['forsenHead'], emotes['HYPERCLAP']))
+                await self.resultMsg.edit(content="You lost **{}** {}{}".format(self.slot_user, emotes['PepeLaugh'], emotes['PianoTime']))
                 break
         else:
-            await self.resultMsg.edit(content="@everyone **HOLY FUCK** {0}{0}{0} **{1} FUCKIN WONNNNN** {0}{0}{0}".format(emotes['PPogo'], self.slot_user))    
+            await self.resultMsg.edit(content="{0} **HOLY MOTHER OF SWEET BABY JESUS {1} HIT THE JACKPOT** {0}".format(emotes['PPogo'], self.slot_user))    
         self.resultMsg = None
         self.slotMsg = None
         self.slot = [0,0,0]
@@ -58,7 +58,7 @@ class MyClient(discord.Client):
                 yes = r.count
             elif r.emoji == "👎":
                 no = r.count
-        result = "tied {}".format(emotes['NABON'])
+        result = "tied {}".format(emotes['DansChamp'])
 
         winner = yes
         if yes > no:
@@ -96,7 +96,7 @@ class MyClient(discord.Client):
             """)
         elif content.startswith('/emotes'):
             await message.delete()
-            await channel.send("Check the emotes here {0}👉  http://206.189.111.249:8000/".format(emotes['PauseChamp']))
+            await channel.send("Check the emotes here {0}👉 http://206.189.111.249:8000".format(emotes['forsenSmug']))
         elif content.startswith('/killme'):
             msgList = await channel.history().flatten()
             parsed = content.split(' ')
@@ -213,7 +213,7 @@ class MyClient(discord.Client):
                 sentence = ' '.join(parsed[1:])
 
             self.pollTimer = time
-            self.pollMsg = await channel.send("**[{}]** - I say *{}*, anyone with me ? {}🤚".format(time, sentence, emotes['peepoWeird']))
+            self.pollMsg = await channel.send("**[{}]** - I say *{}*, anyone with me ? {}🤚".format(time, sentence, emotes['peepoGlad']))
             await self.pollMsg.add_reaction("👍")
             await self.pollMsg.add_reaction("👎")
             await message.delete()
@@ -240,7 +240,7 @@ async def slot_step():
             if slot_index > 0 and random.randint(1,100) < 16:
                 client.slot[slot_index] = client.slot[0]
             else:
-                client.slot[slot_index] = random.randint(1,10)
+                client.slot[slot_index] = random.randint(1, len(client.slot_emotes)-1)
 
             temp_slot_msg = ""
             if slot_index == 0:
