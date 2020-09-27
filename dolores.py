@@ -213,7 +213,7 @@ class MyClient(discord.Client):
                 sentence = ' '.join(parsed[1:])
 
             self.pollTimer = time
-            self.pollMsg = await channel.send("**[{}]** - I say *{}*, anyone with me ? {}🤚".format(time, sentence, emotes['peepoGlad']))
+            self.pollMsg = await channel.send("**[{}]** - {} says *{}*, do you agree ? {}🤚".format(time, author.display_name, sentence, emotes['peepoGlad']))
             await self.pollMsg.add_reaction("👍")
             await self.pollMsg.add_reaction("👎")
             await message.delete()
